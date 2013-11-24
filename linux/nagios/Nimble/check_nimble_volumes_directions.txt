@@ -1,0 +1,56 @@
+Ensure that you have your SSH key on the NIMBLE and for the nimble user on your monitoring server. See below for more information on how to setup your SSH keys.
+
+#warns en crits komen uit QUOTA  
+define command{
+        command_name    check_nimble_volume
+        command_line    /usr/lib/nagios/plugins/check_nimble_volume.sh
+        }
+
+define service {
+        use                             normal
+        host_name                       NIMBLEBOS01
+        service_description             Check all volumes
+        check_command                   check_nimble_volumes
+}
+
+
+
+# directions from https://connect.nimblestorage.com/thread/1345
+
+You can create a SSH key with Nimble OS which will allow you to pass commands without passing the password and instead ssh will pass the key for authentication (which is essential for scripting!).  Here's how you set it up....
+ 
+First on your client/pc/laptop, generate your key (I'm running on OSX so here's the command):
+ 
+Start a terminal session
+ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/Users/Rich/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /Users/Rich/.ssh/id_rsa.
+Your public key has been saved in /Users/Rich/.ssh/id_rsa.pub.
+The key fingerprint is:
+XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX Rich@Richs-MacBook-Pro.local
+ 
+Next view the id_rsa.pub file;
+cat /Users/Rich/.ssh/id_rsa.pub
+(and copy and paste the key contents to your clipboard)
+ 
+Now login to your Nimble controller via CLI and run:
+sshkey --add richkey --type rsa --key <the key you copied from the previous step>
+ 
+(you can view installed keys using sshkey --list)
+sshkey --list
+-------------------+--------------------
+Name                Type
+-------------------+--------------------
+richkey              rsa 
+ 
+ 
+and now try and run your command from your client (all being well it should run without prompting for a password):
+
+ssh -l admin 192.168.1.200 version
+1.4.6.0-39995-opt
+ 
+ 
+Now to free to start the scripting....
